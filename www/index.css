@@ -1,0 +1,200 @@
+h1#title {
+    font-family: 'Righteous', cursive;
+    -webkit-text-stroke-width: 2px;
+    -webkit-text-stroke-color: black;
+    color: #FFFFFF;
+    font-size: 40pt;
+}
+
+/* font-family: 'Bree Serif', serif;  */
+/* font-family: 'Patrick Hand', cursive;   */
+
+img{
+    -webkit-text-stroke-width: 50px;
+}
+
+input{
+    padding: 5px 5px 5px 5px;
+    text-align: center;
+    border: 2px solid;
+    border-radius: 5px;
+    font-weight: bold;
+    background-color: salmon;
+    margin-bottom: 20px;
+}
+
+input:hover{
+    background-color: orangered;
+}
+
+.login-button{
+    padding: 10px 50px 10px 50px;
+    font-size: 20pt;
+}
+
+#status-button{
+    padding: 5px 5px 5px 5px;
+    text-align: center;
+    border: 2px solid;
+    border-radius: 5px;
+    font-weight: bold;
+    background-color: salmon;
+    margin-bottom: 20px;
+}
+
+#status-button:hover{
+    background-color: orangered;
+}
+
+#chat-window{
+    border: 5px solid #00B2EE;
+    border-radius: 15px;
+    border-spacing: 8px;
+    background-color: #CAE1FF;
+}
+
+#status-bar{
+    width: 100%;
+    text-align: center;
+    border: 2px solid;
+    border-radius: 10px;
+    font-weight: bold;
+}
+#status-bar:hover{
+    opacity: 0.8
+}
+
+/*
+CLIENT
+ */
+#client-bar{
+    border-radius: 15px;
+    border-spacing: 12px;
+    border: 2px solid;
+    font-family: 'Bree Serif', serif;
+    font-size: 18px;
+    background-color: #00B2EE;
+}
+#client-profile-pic{
+    width:100px;
+    height:100px;
+    border-radius: 50px;
+    border:1px solid #021a40;
+}
+#friends-list{
+    margin-top: 5px;
+    border-radius: 15px;
+    border-spacing: 12px;
+    border: 2px solid;
+    background-color: #00B2EE;
+}
+
+/*
+FRIEND
+ */
+#friend-bar{
+    border-radius: 15px;
+    border-spacing: 12px;
+    border: 2px solid;
+    font-family: 'Bree Serif', serif;
+    font-size: 18px;
+    background-color: salmon;
+}
+#friend-profile-pic{
+    width:100px;
+    height:100px;
+    border-radius: 50px;
+    border:1px solid #021a40;
+}
+#chat{
+    margin-top: 5px;
+    border-radius: 15px;
+    border: 2px solid;
+    background-color: #00B2EE;
+}
+
+.message-text{
+    text-align: left;
+    margin-top: 1%;
+    margin-left: 1%;
+    width: 90%;
+    background-color: #FFFFFF;
+    border-radius: 1px;
+}
+
+.message-text:hover{
+    background-color: #FFFFFF;
+}
+
+.chat-log{
+    margin: 1% 1% 1% 1%;
+    max-height: 600px;
+    background-color: bisque;
+    border:2px solid #000000;
+    border-radius:2px;
+    overflow: auto;
+}
+
+.message {
+    border-radius: 15px 15px 15px 0px;
+    background-color: salmon;
+    margin: 1% 1% 1% 1%;
+    padding: 2px 2px 2px 5px;
+    font-family: 'Bree Serif', serif;
+    font-size: 12px;
+    min-width: 30%;
+    max-width: 30%;
+    border:2px solid black;
+    word-break: break-all;
+    float:left;
+    clear: both;
+    position: relative;
+}
+
+.message:before{
+    background-color: salmon;
+    border: 2px solid black;
+}
+
+.message:after{
+    border-bottom: 5px solid black;
+    border-left: 5px solid transparent;
+    width: 1px;
+    height: 1px;
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: -7px;
+}
+
+.message.self{
+    border-radius: 15px 15px 0px 15px;
+    float: right;
+}
+
+.message.self:after{
+    border-right: 5px solid transparent;
+    border-left: 0;
+    right: -7px;
+    left: auto;
+}
+
+.friend-list-button{
+    border-radius: 15px;
+    width: inherit;
+    border: 2px solid;
+    margin: 5px 5px 5px 5px;
+    font-family: 'Bree Serif', serif;
+    background-color: salmon;
+}
+
+.friend-list-button:hover{
+    background-color: orangered;
+}
+
+#friend-list-client-avatar{
+    width:50px;
+    height:50px;
+    border-radius: 50px;
+    border:1px solid #021a40;
+}

@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+<head>
+    <script src="https://unpkg.com/vue"></script>
+    <script src="js/socket.io-1.3.7.js"></script>
+
+    <link rel="stylesheet" href="index.css">
+    <link href="https://fonts.googleapis.com/css?family=Righteous" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Patrick+Hand" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Bree+Serif" rel="stylesheet">
+
+    <title>OLX Chat</title>
+</head>
+<body>
+<div id="app-chat">
+    <h1 id="title">
+        <a style="color:#8B008B">O</a><a style="color:#32CD32">L</a><a style="color:#FFA500">X</a>
+        Chat
+    </h1>
+    <div id="button-group">
+            <span v-show="!isUserLogged">
+                <input id="login-button" class="login-button" type="button"  value="Login" v-on:click="loginClient">
+            </span>
+        <span v-show="!isUserLogged">
+            </span>
+    </div>
+    <div id="page" v-show="isUserLogged">
+        <table id="chat-window" style="width:100%;">
+            <tbody>
+            <tr>
+                <td style="width:25%; vertical-align: top">
+                    <div id="client-bar">
+                        <table align="center" cellpadding="10%">
+                            <td>
+                                <img id="client-profile-pic" src="images/seiya.jpg"/>
+                            </td>
+                            <td>
+                                <p> {{ username }}</p>
+                                <input id="logout-button" type="button"  value="Logout" v-on:click="logoutClient">
+                                <select id="status-bar" v-model="status" v-on:change="changeStatus">
+                                    <option v-for="status in statusOptions">
+                                        {{ status }}
+                                    </option>
+                                </select>
+                            </td>
+                        </table>
+                    </div>
+                    <div id="friends-list">
+                        <input style="display: block; margin: 10px auto" id="friend-button" type="button" value="Add Friend" v-on:click="addFriend">
+                        <div v-bind:id="user.username" v-on:click="openChat(user.username, user.status)" v-for="user in friends" class='friend-list-button'>
+                            <table align='center' cellpadding='10%'>
+                                <tr>
+                                    <td>
+                                        <img id='friend-list-client-avatar' align='center' src='images/marin.jpg'>
+                                    </td>
+                                    <td>
+                                        <p align='center'>{{ user.username }} - {{ user.status }}</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </td>
+                <td id="friend-chat" style="vertical-align: top" v-show="isChatSelected">
+                    <div id="friend-bar">
+                        <table align="center" cellpadding="10%">
+                            <td>
+                                <p align="center">--</p>
+                                <p align="center">--</p>
+                            </td>
+                            <td>
+                                <img id="friend-profile-pic" src="images/marin.jpg">
+                            </td>
+                        </table>
+                    </div>
+                    <div id="chat">
+                        <div id="chat-log" class="chat-log" >
+                            <div v-for="message in currentChat.messages">
+                                <div v-if="message.sender == username" class="message self">
+                                    <p>{{ message.text }}</p>
+                                </div>
+                                <div v-else-if="message.receiver == username" class="message">
+                                    <p>{{ message.text }}</p>
+                                </div>
+                                <div v-else>
+                                    <p>You have no chat history with {{ currentChat.friend_name }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <input class="message-text" type="text"/>
+                        <input class="message-button" type="button" value="Message" v-on:click="sendMessage">
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<script src="js/chatsocket.js"></script>
+</body>
+</html>

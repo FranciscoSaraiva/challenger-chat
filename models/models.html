@@ -1,0 +1,489 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">gitlab.lisbontechhub.com/A-Team/challenger-chat/models/client.go (100.0%)</option>
+				
+				<option value="file1">gitlab.lisbontechhub.com/A-Team/challenger-chat/models/message.go (100.0%)</option>
+				
+				<option value="file2">gitlab.lisbontechhub.com/A-Team/challenger-chat/models/session.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package models
+
+import (
+        "fmt"
+        "strings"
+
+        "gitlab.lisbontechhub.com/A-Team/challenger-chat/chaterrors"
+        "gitlab.lisbontechhub.com/A-Team/challenger-chat/config"
+
+        "gopkg.in/mgo.v2/bson"
+)
+
+// Client of the chat
+type Client struct {
+        Name    string
+        Status  string
+        Friends []string
+}
+
+/*
+ Public Functions
+*/
+
+// CreateClient function that creates a new Client.
+// It creates a new Client if the name chosen isn't taken already.
+// If it already exists a new Client isn't created.
+// It functions as the register.
+func CreateClient(name string) (Client, error) <span class="cov8" title="1">{
+        collection := config.GetCollection("Client")
+
+        client := new(Client)
+        client.Name = name
+        client.Status = "Online"
+        client.Friends = nil
+
+        err := collection.Insert(client)
+        consoleOutputClient(*client, "create")
+        return *client, err
+}</span>
+
+// LoginClient function that loads the client. Functions as the login.
+func LoginClient(name string) (Client, error) <span class="cov8" title="1">{
+        collection := config.GetCollection("Client")
+        query := bson.M{"name": name}
+
+        client := new(Client)
+        collection.Find(query).One(client)
+        client.Status = "Online"
+
+        err := collection.Update(query, client)
+        chaterrors.CheckError(err)
+
+        consoleOutputClient(*client, "login")
+
+        return *client, err
+}</span>
+
+// LogoutClient function that sets the client as logged out.
+func LogoutClient(name string) (*Client, error)<span class="cov8" title="1">{
+        collection := config.GetCollection("Client")
+        query := bson.M{"name": name}
+
+        client := new(Client)
+        collection.Find(query).One(client)
+        client.Status = "Offline"
+
+        err := collection.Update(query, client)
+        chaterrors.CheckError(err)
+
+        return client, err
+}</span>
+
+// GetClient function that returns an instance of a Client via its username.
+func GetClient(name string) (*Client, error) <span class="cov8" title="1">{
+        collection := config.GetCollection("Client")
+        query := bson.M{"name": name}
+
+        client := new(Client)
+        collection.Find(query).One(client)
+
+        return client, nil
+}</span>
+
+// ChangeClientStatus function that changes the status of a client.
+// The status are only between Online, Away and Busy.
+func ChangeClientStatus(name, status string) (*Client, error) <span class="cov8" title="1">{
+        collection := config.GetCollection("Client")
+        query := bson.M{"name": name}
+
+        client := new(Client)
+        collection.Find(query).One(client)
+        client.Status = status
+
+        err := collection.Update(query, client)
+        chaterrors.CheckError(err)
+
+        return client, err
+}</span>
+
+// ClientAddFriend function that adds a friend to a user.
+// Both must exist to add each other.
+func ClientAddFriend(user string, friend string) (*Client, error) <span class="cov8" title="1">{
+        collection := config.GetCollection("Client")
+        roomName := generateRoomName()
+        fmt.Println("******************* ROOM NAME: " + roomName + " ****************")
+
+        //Client side
+        client := new(Client)
+        query := bson.M{"name": user}
+        collection.Find(query).One(client)
+        client.Friends = append(client.Friends, friend+"-"+roomName)
+        err := collection.Update(query, client)
+        chaterrors.CheckError(err)
+
+        //Friend side
+        clientF := new(Client)
+        query = bson.M{"name": friend}
+        collection.Find(query).One(clientF)
+        clientF.Friends = append(clientF.Friends, user+"-"+roomName)
+        err = collection.Update(query, clientF)
+        chaterrors.CheckError(err)
+
+        return clientF, nil
+}</span>
+
+// GetFriends function that returns an array of Clients with the information
+// of a user's friends, such as username and current status.
+func GetFriends(username string) ([]*Client, error) <span class="cov8" title="1">{
+        var friendList []*Client
+        collection := config.GetCollection("Client")
+        query := bson.M{"name": username}
+
+        client := new(Client)
+        collection.Find(query).One(client)
+
+        for _, v := range client.Friends </span><span class="cov8" title="1">{
+                collection = config.GetCollection("Client")
+
+                name := strings.Split(v, "-")
+
+                query = bson.M{"name": name[0]}
+                friend := new(Client)
+                collection.Find(query).One(friend)
+
+                friendList = append(friendList, friend)
+                fmt.Println(name[0])
+        }</span>
+        <span class="cov8" title="1">return friendList, nil</span>
+}
+
+/**
+Private Functions
+*/
+
+// generateRoomName function that generates a room name for two clients to
+// talk inside the Socket.
+func generateRoomName() string <span class="cov8" title="1">{
+        roomName := bson.NewObjectId().Hex()
+        return roomName
+}</span>
+
+// consoleOutputClient function that returns information on the console, depending on the
+// user's action. It shows information about a client and what action was made about them.
+func consoleOutputClient(client Client, action string) <span class="cov8" title="1">{
+        fmt.Println("-------------------------")
+
+        switch action </span>{
+        case "create":<span class="cov8" title="1">
+                action = "|Client Created|"
+                break</span>
+        case "login":<span class="cov8" title="1">
+                action = " |Client Login|"
+                break</span>
+        }
+        <span class="cov8" title="1">fmt.Println("    " + action + "")
+
+        fmt.Println("*************************")
+        fmt.Println("Name   -&gt; " + client.Name)
+        fmt.Println("Status -&gt; " + client.Status)
+        fmt.Println("&gt;Friends&lt;")
+        for _, v := range client.Friends </span><span class="cov8" title="1">{
+                fmt.Print(v + " ")
+        }</span>
+
+        <span class="cov8" title="1">fmt.Println("\n*************************\n")</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package models
+
+import (
+        "fmt"
+        "time"
+
+        "gitlab.lisbontechhub.com/A-Team/challenger-chat/config"
+
+        "gopkg.in/mgo.v2/bson"
+)
+
+// Message clients send each other
+type Message struct {
+        Sender    string
+        Receiver  string
+        Text      string
+        Timestamp int64
+}
+
+/*
+ Public Functions
+*/
+
+// CreateMessage function that receives the information needed to create a new message
+// between two users. Both users must exist in the database to be created.
+func CreateMessage(text string, sender string, receiver string) (*Message, error) <span class="cov8" title="1">{
+        message := new(Message)
+        message.Text = text
+        message.Sender = sender
+        message.Receiver = receiver
+        message.Timestamp = config.GetTimeNowTimeStamp()
+
+        collection := config.GetCollection("Message")
+        err := collection.Insert(message)
+        consoleOutputMessage(*message, "send")
+
+        return message, err
+}</span>
+
+// GetClientChatLog function that receives a username and a friend name and returns the conversations
+// between them.
+func GetClientChatLog(sender, receiver string) ([]Message, error) <span class="cov8" title="1">{
+        collection := config.GetCollection("Message")
+
+        var allMessages []Message
+
+        queryClient := bson.M{"sender": sender, "receiver": receiver}
+        queryFriend := bson.M{"sender": receiver, "receiver": sender}
+        collection.Find(bson.M{"$or": []bson.M{queryClient, queryFriend}}).Sort("timestamp").All(&amp;allMessages)
+
+        return allMessages, nil
+}</span>
+
+/*
+ Private Functions
+*/
+
+// consoleOutputClient function that returns information on the console, depending on the
+// user's action. It shows information about a client and what action was made about them.
+func consoleOutputMessage(message Message, action string) <span class="cov8" title="1">{
+        fmt.Println("-------------------------")
+
+        switch action </span>{
+        case "send":<span class="cov8" title="1">
+                action = "|New Message|"
+                break</span>
+        }
+        <span class="cov8" title="1">fmt.Println("\n    " + action + "")
+
+        fmt.Println("*************************")
+        fmt.Println("Sender   -&gt; " + message.Sender)
+        fmt.Println("Receiver -&gt; " + message.Receiver)
+        fmt.Println("Time     -&gt; " + time.Unix(message.Timestamp, 0).String())
+        fmt.Println("&gt;Message&lt;")
+        fmt.Println(message.Text + "\n")
+
+        fmt.Println("*************************\n")</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package models
+
+import (
+        "fmt"
+
+        "gitlab.lisbontechhub.com/A-Team/challenger-chat/chaterrors"
+        "gitlab.lisbontechhub.com/A-Team/challenger-chat/config"
+
+        "gopkg.in/mgo.v2/bson"
+)
+
+// Session structure that represents the socket session a user is connected to.
+// Saves the SocketID the user is connected to, Active represents if he's currently
+// connected, Time shows the time of connection, User is the name of the User connected.
+type Session struct {
+        ID       bson.ObjectId `bson:"_id,omitempty"`
+        SocketID string
+        Active   bool
+        Time     int64
+        User     string
+}
+
+/*
+ Public Functions
+*/
+
+// CreateSession function that creates a new Session with information of the user's session in the
+// the Socket he's connected in.
+func CreateSession(socketID, user string) (*Session, error) <span class="cov8" title="1">{
+        session := new(Session)
+        session.ID = bson.NewObjectId()
+        session.SocketID = socketID
+        session.Active = true
+        session.Time = config.GetTimeNowTimeStamp()
+        session.User = user
+
+        collection := config.GetCollection("Session")
+        err := collection.Insert(&amp;session)
+
+        fmt.Printf(" %+v", session)
+        return session, err
+}</span>
+
+// UpdateSession function that updates the information of the Session the user is currently connected
+// to in the Socket.
+func UpdateSession(socketID, user string) (*Session, error) <span class="cov8" title="1">{
+        collection := config.GetCollection("Session")
+        query := bson.M{"user": user}
+
+        session := new(Session)
+        err := collection.Find(query).One(session)
+        chaterrors.CheckError(err)
+
+        session.SocketID = socketID
+        session.Active = true
+        session.Time = config.GetTimeNowTimeStamp()
+        collection.Update(query, session)
+
+        return session, err
+}</span>
+
+// CloseSession function that closes the session a user was connected to, via Socket.
+func CloseSession(user string) *Session<span class="cov8" title="1">{
+        collection := config.GetCollection("Session")
+        query := bson.M{"user": user}
+
+        session := new(Session)
+        err := collection.Find(query).One(session)
+        chaterrors.CheckError(err)
+
+        session.SocketID = ""
+        session.Active = false
+        session.Time = config.GetTimeNowTimeStamp()
+        collection.Update(query, session)
+
+        return session
+}</span>
+
+// GetUserSession function that returned an object of the Session with the information about
+// a user's session in the Socket.
+func GetUserSession(user string) (*Session, error) <span class="cov8" title="1">{
+        collection := config.GetCollection("Session")
+        query := bson.M{"user": user}
+
+        session := new(Session)
+        err := collection.Find(query).One(session)
+
+        return session, err
+}</span>
+
+// DisconnectUserSession function that disconnects the user from the session is he on
+// in the case he disconnects without choosing the logout option.
+func DisconnectUserSession(socketID string) *Session<span class="cov8" title="1">{
+        collection := config.GetCollection("Session")
+        query := bson.M{"socketid": socketID}
+
+        session := new(Session)
+        err := collection.Find(query).One(session)
+        chaterrors.CheckError(err)
+        session.SocketID = ""
+        session.Active = false
+        session.Time = config.GetTimeNowTimeStamp()
+        collection.Update(query, session)
+
+        collection = config.GetCollection("Client")
+        query = bson.M{"name": session.User}
+
+        client := new(Client)
+        err = collection.Find(query).One(client)
+        chaterrors.CheckError(err)
+        client.Status = "Offline"
+        collection.Update(query, client)
+
+        return session
+}</span>
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

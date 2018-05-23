@@ -1,0 +1,27 @@
+mode: set
+gitlab.lisbontechhub.com/A-Team/challenger-chat/models/session.go:29.61,42.2 10 1
+gitlab.lisbontechhub.com/A-Team/challenger-chat/models/session.go:46.61,60.2 10 1
+gitlab.lisbontechhub.com/A-Team/challenger-chat/models/session.go:63.40,77.2 10 1
+gitlab.lisbontechhub.com/A-Team/challenger-chat/models/session.go:81.52,89.2 5 1
+gitlab.lisbontechhub.com/A-Team/challenger-chat/models/session.go:93.53,115.2 17 1
+gitlab.lisbontechhub.com/A-Team/challenger-chat/models/client.go:28.48,39.2 8 1
+gitlab.lisbontechhub.com/A-Team/challenger-chat/models/client.go:42.47,56.2 9 1
+gitlab.lisbontechhub.com/A-Team/challenger-chat/models/client.go:59.48,71.2 8 1
+gitlab.lisbontechhub.com/A-Team/challenger-chat/models/client.go:74.46,82.2 5 1
+gitlab.lisbontechhub.com/A-Team/challenger-chat/models/client.go:86.63,98.2 8 1
+gitlab.lisbontechhub.com/A-Team/challenger-chat/models/client.go:102.67,124.2 16 1
+gitlab.lisbontechhub.com/A-Team/challenger-chat/models/client.go:128.53,136.35 6 1
+gitlab.lisbontechhub.com/A-Team/challenger-chat/models/client.go:148.2,148.24 1 1
+gitlab.lisbontechhub.com/A-Team/challenger-chat/models/client.go:136.35,147.3 7 1
+gitlab.lisbontechhub.com/A-Team/challenger-chat/models/client.go:157.32,160.2 2 1
+gitlab.lisbontechhub.com/A-Team/challenger-chat/models/client.go:164.56,167.16 2 1
+gitlab.lisbontechhub.com/A-Team/challenger-chat/models/client.go:175.2,181.35 6 1
+gitlab.lisbontechhub.com/A-Team/challenger-chat/models/client.go:185.2,185.46 1 1
+gitlab.lisbontechhub.com/A-Team/challenger-chat/models/client.go:168.16,170.8 2 1
+gitlab.lisbontechhub.com/A-Team/challenger-chat/models/client.go:171.15,173.8 2 1
+gitlab.lisbontechhub.com/A-Team/challenger-chat/models/client.go:181.35,183.3 1 1
+gitlab.lisbontechhub.com/A-Team/challenger-chat/models/message.go:26.83,38.2 9 1
+gitlab.lisbontechhub.com/A-Team/challenger-chat/models/message.go:42.67,52.2 6 1
+gitlab.lisbontechhub.com/A-Team/challenger-chat/models/message.go:60.59,63.16 2 1
+gitlab.lisbontechhub.com/A-Team/challenger-chat/models/message.go:68.2,77.44 8 1
+gitlab.lisbontechhub.com/A-Team/challenger-chat/models/message.go:64.14,66.8 2 1

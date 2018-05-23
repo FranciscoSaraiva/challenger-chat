@@ -1,0 +1,737 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">gitlab.lisbontechhub.com/A-Team/challenger-chat/controllers/clientController.go (100.0%)</option>
+				
+				<option value="file1">gitlab.lisbontechhub.com/A-Team/challenger-chat/controllers/messageController.go (100.0%)</option>
+				
+				<option value="file2">gitlab.lisbontechhub.com/A-Team/challenger-chat/controllers/sessionController.go (100.0%)</option>
+				
+				<option value="file3">gitlab.lisbontechhub.com/A-Team/challenger-chat/controllers/socketController.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package controllers
+
+import (
+        "fmt"
+        "strings"
+
+        "gitlab.lisbontechhub.com/A-Team/challenger-chat/chaterrors"
+        "gitlab.lisbontechhub.com/A-Team/challenger-chat/config"
+        "gitlab.lisbontechhub.com/A-Team/challenger-chat/models"
+
+        "gopkg.in/mgo.v2/bson"
+)
+
+/*
+ Public Functions
+*/
+
+// StartClientController function that starts the Client entry process.
+// If the Client's name already exists, then it proceeds to loading his information.
+// If the Client's name doesn't exist, then it creates a new Client and loads his information.
+func StartClientController(name string) (*models.Client, error) <span class="cov8" title="1">{
+        if len(name) == 0 </span><span class="cov8" title="1">{
+                return nil, chaterrors.ErrClientLoginNameIsEmpty{Username: name}
+        }</span>
+
+        <span class="cov8" title="1">if len(name) &lt; 3 </span><span class="cov8" title="1">{
+                return nil, chaterrors.ErrClientLoginNameIsShort{Username: name}
+        }</span>
+
+        <span class="cov8" title="1">for _, v := range name </span><span class="cov8" title="1">{
+                if v &gt;= '0' &amp;&amp; v &lt;= '9' </span><span class="cov8" title="1">{
+                        return nil, chaterrors.ErrClientLoginNameHasNumeric{Username: name}
+                }</span>
+        }
+
+        <span class="cov8" title="1">if CheckIfUserExists(name) </span><span class="cov8" title="1">{
+                client, err := models.LoginClient(name)
+                return &amp;client, err
+        }</span>
+
+        <span class="cov8" title="1">client, err := models.CreateClient(name)
+        return &amp;client, err</span>
+}
+
+// LogoutClientController function that controls the flow to logout the client from the application.
+func LogoutClientController(name string) (*models.Client, error) <span class="cov8" title="1">{
+        if len(name) == 0 </span><span class="cov8" title="1">{
+                return nil, chaterrors.ErrClientLoginNameIsEmpty{Username: name}
+        }</span>
+
+        <span class="cov8" title="1">if !CheckIfUserExists(name) </span><span class="cov8" title="1">{
+                return nil, chaterrors.ErrClientNotFound{Username: name}
+        }</span>
+        <span class="cov8" title="1">client, err := models.LogoutClient(name)
+        return client, err</span>
+}
+
+// ClientAddFriendController function that controls the flow for a client to add a friend.
+func ClientAddFriendController(user string, friend string) error <span class="cov8" title="1">{
+        if len(user) == 0 </span><span class="cov8" title="1">{
+                return chaterrors.ErrClientNameEmpty{Username: user}
+        }</span>
+        <span class="cov8" title="1">if len(friend) == 0 </span><span class="cov8" title="1">{
+                return chaterrors.ErrEmptyFriendName{Friendname: friend}
+        }</span>
+
+        <span class="cov8" title="1">if !CheckIfUserExists(friend) </span><span class="cov8" title="1">{
+                return chaterrors.ErrFriendNotFound{Friendname: friend}
+        }</span>
+
+        <span class="cov8" title="1">if checkIfUsersAreFriends(user, friend) </span><span class="cov8" title="1">{
+                return chaterrors.ErrUsersAreFriends{Username: user, Friendname: friend}
+        }</span>
+        <span class="cov8" title="1">_, err := models.ClientAddFriend(user, friend)
+
+        return err</span>
+}
+
+// GetFriendsController function that controls the flow to getting the friends of a client.
+func GetFriendsController(username string) ([]*models.Client, error) <span class="cov8" title="1">{
+        if len(username) == 0 </span><span class="cov8" title="1">{
+                return nil, chaterrors.ErrClientNameEmpty{Username: username}
+        }</span>
+
+        <span class="cov8" title="1">if !CheckIfUserExists(username) </span><span class="cov8" title="1">{
+                return nil, chaterrors.ErrClientNotFound{Username: username}
+        }</span>
+
+        <span class="cov8" title="1">friends, err := models.GetFriends(username)
+        return friends, err</span>
+}
+
+// GetClientController function that controls the flow of getting the information of a client.
+func GetClientController(name string) (*models.Client, error) <span class="cov8" title="1">{
+        if len(name) == 0 </span><span class="cov8" title="1">{
+                return nil, chaterrors.ErrClientNameEmpty{Username: name}
+        }</span>
+
+        <span class="cov8" title="1">if !CheckIfUserExists(name) </span><span class="cov8" title="1">{
+                return nil, chaterrors.ErrClientNotFound{Username: name}
+        }</span>
+        <span class="cov8" title="1">client, err := models.GetClient(name)
+        return client, err</span>
+}
+
+// ChangeClientStatusController function that controls the flow to change a client's status.
+func ChangeClientStatusController(name, status string) (*models.Client, error) <span class="cov8" title="1">{
+        status = strings.ToLower(status)
+        status = strings.Title(status)
+
+        if len(name) == 0 </span><span class="cov8" title="1">{
+                return nil, chaterrors.ErrClientNameEmpty{Username: name}
+        }</span>
+
+        <span class="cov8" title="1">if !CheckIfUserExists(name) </span><span class="cov8" title="1">{
+                return nil, chaterrors.ErrClientNotFound{Username: name}
+        }</span>
+
+        <span class="cov8" title="1">fmt.Println("CURRENT STATUS: " + status)
+        fmt.Println(status == "Online")
+        fmt.Println(status == "Busy")
+        fmt.Println(status == "Away")
+
+        if status != "Online" &amp;&amp; status != "Busy" &amp;&amp; status != "Away" </span><span class="cov8" title="1">{
+                return nil, chaterrors.ErrInvalidStatus{Status: status}
+        }</span>
+        <span class="cov8" title="1">client, err := models.ChangeClientStatus(name, status)
+        return client, err</span>
+}
+
+// CheckIfUserExists function that checks if a user with the name already exists in the database.
+// If it exists, a user was already created and returns true.
+// If it doesn't exist, a user still wasn't created and returns false.
+func CheckIfUserExists(name string) bool <span class="cov8" title="1">{
+        users := config.GetCollection("Client")
+        count, err := users.Find(bson.M{"name": name}).Count()
+        if !chaterrors.CheckError(err) &amp;&amp; count == 1 </span><span class="cov8" title="1">{
+                return true
+        }</span>
+
+        <span class="cov8" title="1">return false</span>
+}
+
+/*
+ Private Functions
+*/
+
+// checkIfUsersAreFriends function that checks if two users are already friends.
+func checkIfUsersAreFriends(user, friend string) bool <span class="cov8" title="1">{
+        var userList []string
+
+        collection := config.GetCollection("Client")
+
+        //Client side
+        client := new(models.Client)
+        query := bson.M{"name": user}
+        collection.Find(query).One(client)
+        userList = client.Friends
+
+        for _, v := range userList </span><span class="cov8" title="1">{
+                friendName := strings.Split(v, "-")
+                if friendName[0] == friend </span><span class="cov8" title="1">{
+                        return true
+                }</span>
+        }
+        <span class="cov8" title="1">return false</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package controllers
+
+import (
+        "gitlab.lisbontechhub.com/A-Team/challenger-chat/chaterrors"
+        "gitlab.lisbontechhub.com/A-Team/challenger-chat/models"
+)
+
+/*
+ Public Functions
+*/
+
+// CreateMessageController function that controls the flow to create a new message
+// between two users.
+func CreateMessageController(text string, sender string, receiver string) (*models.Message, error) <span class="cov8" title="1">{
+        if len(text) == 0 </span><span class="cov8" title="1">{
+                return nil, chaterrors.ErrTextIsEmpty{}
+        }</span>
+
+        <span class="cov8" title="1">if len(sender) == 0 </span><span class="cov8" title="1">{
+                return nil, chaterrors.ErrSenderNameIsEmpty{Username: sender}
+        }</span>
+
+        <span class="cov8" title="1">if len(receiver) == 0 </span><span class="cov8" title="1">{
+                return nil, chaterrors.ErrReceiverNameIsEmpty{Username: receiver}
+        }</span>
+
+        <span class="cov8" title="1">if !CheckIfUserExists(sender) </span><span class="cov8" title="1">{
+                return nil, chaterrors.ErrSenderDoesNotExist{Username: sender}
+        }</span>
+
+        <span class="cov8" title="1">if !CheckIfUserExists(receiver) </span><span class="cov8" title="1">{
+                return nil, chaterrors.ErrReceiverDoesNotExist{Username: receiver}
+        }</span>
+
+        <span class="cov8" title="1">if !checkIfUsersAreFriends(sender, receiver) </span><span class="cov8" title="1">{
+                return nil, chaterrors.ErrClientsAreNotFriends{Receiver: receiver, Sender: sender}
+        }</span>
+
+        <span class="cov8" title="1">message, err := models.CreateMessage(text, sender, receiver)
+
+        return message, err</span>
+}
+
+// GetClientChatLogController function that controls the flow to get the chat log
+// between two users.
+func GetClientChatLogController(sender, receiver string) ([]models.Message, error) <span class="cov8" title="1">{
+        if len(sender) == 0 </span><span class="cov8" title="1">{
+                return nil, chaterrors.ErrSenderNameIsEmpty{Username: sender}
+        }</span>
+        <span class="cov8" title="1">if len(receiver) == 0 </span><span class="cov8" title="1">{
+                return nil, chaterrors.ErrReceiverNameIsEmpty{Username: receiver}
+        }</span>
+
+        <span class="cov8" title="1">if !CheckIfUserExists(sender) </span><span class="cov8" title="1">{
+                return nil, chaterrors.ErrSenderDoesNotExist{Username: sender}
+        }</span>
+
+        <span class="cov8" title="1">if !CheckIfUserExists(receiver) </span><span class="cov8" title="1">{
+                return nil, chaterrors.ErrReceiverDoesNotExist{Username: receiver}
+        }</span>
+
+        <span class="cov8" title="1">messages := models.GetClientChatLog(sender, receiver)
+
+        return messages, nil</span>
+}
+
+/*
+ Private Functions
+*/
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package controllers
+
+import (
+        "gitlab.lisbontechhub.com/A-Team/challenger-chat/chaterrors"
+        "gitlab.lisbontechhub.com/A-Team/challenger-chat/config"
+        "gitlab.lisbontechhub.com/A-Team/challenger-chat/models"
+
+        "gopkg.in/mgo.v2/bson"
+)
+
+/*
+ Public Functions
+*/
+
+// StartSessionController function that redirects what action to do based on the socketID and the username.
+func StartSessionController(socketID, user string) (*models.Session, error) <span class="cov8" title="1">{
+        if !CheckIfUserExists(user) </span><span class="cov8" title="1">{
+                return nil, chaterrors.ErrClientNotFound{Username: user}
+        }</span>
+        <span class="cov8" title="1">if checkIfSessionExists(user) </span><span class="cov8" title="1">{
+                session, err := models.UpdateSession(socketID, user)
+                return session, err
+        }</span>
+        <span class="cov8" title="1">session, err := models.CreateSession(socketID, user)
+        return session, err</span>
+}
+
+// CloseSessionController function that controls the flow to close a session of a user.
+func CloseSessionController(user string) (*models.Session, error) <span class="cov8" title="1">{
+        if !checkIfSessionExists(user) </span><span class="cov8" title="1">{
+                return nil, chaterrors.ErrSessionNotFound{Username: user}
+        }</span>
+        <span class="cov8" title="1">session := models.CloseSession(user)
+        return session, nil</span>
+}
+
+// GetUserSessionController function that controls the flow to getting a session of a user.
+func GetUserSessionController(user string) (*models.Session, error) <span class="cov8" title="1">{
+        if !checkIfSessionExists(user) </span><span class="cov8" title="1">{
+                return nil, chaterrors.ErrSessionNotFound{Username: user}
+        }</span>
+        <span class="cov8" title="1">if !CheckIfUserExists(user) </span><span class="cov8" title="1">{
+                return nil, chaterrors.ErrClientNotFound{Username: user}
+        }</span>
+        <span class="cov8" title="1">session, err := models.GetUserSession(user)
+        return session, err</span>
+}
+
+// DisconnectUserSessionController function that controls the flow to disconnecting the user's session.
+func DisconnectUserSessionController(socketID string) *models.Session <span class="cov8" title="1">{
+        session := models.DisconnectUserSession(socketID)
+        return session
+}</span>
+
+/*
+ Private Functions
+*/
+
+// checkIfSessionExists function that checks if a user is currently connected in an existing
+// session in the Socket.
+func checkIfSessionExists(user string) bool <span class="cov8" title="1">{
+        sessions := config.GetCollection("Session")
+        count, _ := sessions.Find(bson.M{"user": user}).Count()
+        if count == 1 </span><span class="cov8" title="1">{ //meaning one was found
+                return true
+        }</span>
+        <span class="cov8" title="1">return false</span>
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package controllers
+
+import (
+        "fmt"
+        "log"
+        "strings"
+
+        "gitlab.lisbontechhub.com/A-Team/challenger-chat/chaterrors"
+
+        "github.com/googollee/go-socket.io"
+)
+
+// SocketResponseFunc that represents the type returned by the socket functions
+type SocketResponseFunc func(n map[string]interface{})
+
+// RequestSocketInformation that represents the converted information sent from the client to the socket
+type RequestSocketInformation struct {
+        Username   string
+        FriendName string
+        Text       string
+        Status     string
+}
+
+/**
+Public Functions
+*/
+
+type SocketInterface interface {
+        BroadcastTo(room, message string, args ...interface{})
+}
+
+// LoginUserSocketController function that logs the user in the chat application.
+func LoginUserSocketController(socket SocketInterface, so socketio.Socket) SocketResponseFunc <span class="cov8" title="1">{
+        return func(n map[string]interface{}) </span><span class="cov8" title="1">{
+
+                convertedData, error := convertMapData(n)
+                if error != nil </span><span class="cov8" title="1">{
+                        so.Emit("error", error)
+                        return
+                }</span>
+
+                <span class="cov8" title="1">fmt.Printf("\n    --&gt; CONNECTED &lt;--\n")
+                fmt.Println("-------------------------")
+                fmt.Printf("    username: %v\n", n["username"])
+                fmt.Println("-------------------------\n")
+
+                //We start the client
+                username := convertedData.Username
+                client, err := StartClientController(username)
+                if chaterrors.CheckError(err) </span><span class="cov8" title="1">{
+                        error := chaterrors.NewError("Start Client Error", err.Error())
+                        so.Emit("error", error)
+                        return
+                }</span>
+                //After we create the session the user will run on
+                <span class="cov8" title="1">session, err := StartSessionController(so.Id(), client.Name)
+                chaterrors.CheckError(err)
+
+                type UserInfo map[string]interface{}
+
+                userInfo := UserInfo{"Username": username, "SocketId": so.Id(), "SessionId": session.ID}
+
+                so.Emit("user_session", userInfo)
+                socket.BroadcastTo("chat", "notify_online", username)</span>
+        }
+}
+
+// LogoutUserSocketController function that logs out the user from the chat application.
+func LogoutUserSocketController(socket SocketInterface, so socketio.Socket) SocketResponseFunc <span class="cov8" title="1">{
+        return func(n map[string]interface{}) </span><span class="cov8" title="1">{
+                convertedData, error := convertMapData(n)
+                if error != nil </span><span class="cov8" title="1">{
+                        so.Emit("error", error)
+                        return
+                }</span>
+
+                <span class="cov8" title="1">username := convertedData.Username
+
+                _, err := LogoutClientController(username)
+                if chaterrors.CheckError(err) </span><span class="cov8" title="1">{
+                        error := chaterrors.NewError("Logout Client Error", err.Error())
+                        so.Emit("error", error)
+                        return
+                }</span>
+                <span class="cov8" title="1">CloseSessionController(username)
+                fmt.Println("*** " + username + " has disconnected ***")
+
+                type UserInfo map[string]interface{}
+
+                userInfo := UserInfo{"User": username, "Status": "Offline"}
+
+                socket.BroadcastTo("chat", "notify_offline", username)
+                socket.BroadcastTo("chat", "notify_status", userInfo)
+                so.Leave("chat")
+                so.Disconnect()</span>
+        }
+}
+
+// AddFriendSocketController function that adds a friend to the user's list.
+func AddFriendSocketController(so socketio.Socket) SocketResponseFunc <span class="cov8" title="1">{
+        return func(n map[string]interface{}) </span><span class="cov8" title="1">{
+                convertedData, error := convertMapData(n)
+                if error != nil </span><span class="cov8" title="1">{
+                        so.Emit("error", error)
+                        return
+                }</span>
+
+                <span class="cov8" title="1">username := convertedData.Username
+                friend := convertedData.FriendName
+
+                err := ClientAddFriendController(username, friend)
+                if chaterrors.CheckError(err) </span><span class="cov8" title="1">{
+                        error := chaterrors.NewError("Add Friend Error", err.Error())
+                        so.Emit("error", error)
+                        return
+                }</span>
+                <span class="cov8" title="1">fmt.Println("*** " + username + " has added " + friend + " as a friend. ***")
+
+                friends, err := GetFriendsController(username)
+
+                clientInfo, err := GetClientController(username)
+                chaterrors.CheckError(err)
+
+                so.Emit("get_user_friends", friends)
+                so.BroadcastTo("chat", "get_new_friend", clientInfo, friend)</span>
+        }
+}
+
+// GetChatLogSocketController function that fetches the chat log between two users.
+func GetChatLogSocketController(so socketio.Socket) SocketResponseFunc <span class="cov8" title="1">{
+        return func(n map[string]interface{}) </span><span class="cov8" title="1">{
+                fmt.Println("--------")
+                fmt.Printf("%v+", n)
+
+                convertedData, error := convertMapData(n)
+                if error != nil </span><span class="cov8" title="1">{
+                        so.Emit("error", error)
+                        return
+                }</span>
+
+                <span class="cov8" title="1">username := convertedData.Username
+                friendName := convertedData.FriendName
+
+                messages, err := GetClientChatLogController(username, friendName)
+                chaterrors.CheckError(err)
+
+                client, err := GetClientController(username)
+                if chaterrors.CheckError(err) </span><span class="cov8" title="1">{
+                        error := chaterrors.NewError("Get Client Error", err.Error())
+                        so.Emit("error", error)
+                        return
+                }</span>
+
+                <span class="cov8" title="1">var roomName string
+                for _, v := range client.Friends </span><span class="cov8" title="1">{
+                        name := strings.Split(v, "-")
+                        if name[0] == friendName </span><span class="cov8" title="1">{
+                                roomName = name[1]
+                        }</span>
+                }
+
+                <span class="cov8" title="1">so.Join(roomName)
+                log.Printf("*** Connected " + username + " and " + friendName + " to room [ " + roomName + " ]")
+                so.Emit("get_chat_log", messages)</span>
+        }
+}
+
+// MessageFriendSocketController function that messages a friend of the user.
+func MessageFriendSocketController(so socketio.Socket) SocketResponseFunc <span class="cov8" title="1">{
+        return func(n map[string]interface{}) </span><span class="cov8" title="1">{
+                convertedData, error := convertMapData(n)
+                if error != nil </span><span class="cov8" title="1">{
+                        so.Emit("error", error)
+                        return
+                }</span>
+
+                <span class="cov8" title="1">sender := convertedData.Username
+                receiver := convertedData.FriendName
+                textMessage := convertedData.Text
+
+                message, err := CreateMessageController(textMessage, sender, receiver)
+                if chaterrors.CheckError(err) </span><span class="cov8" title="1">{
+                        error := chaterrors.NewError("Send Message Error", err.Error())
+                        so.Emit("error", error)
+                        return
+                }</span>
+                <span class="cov8" title="1">fmt.Printf("%v", message)
+
+                client, err := GetClientController(sender)
+                chaterrors.CheckError(err)
+
+                var roomName string
+                for _, v := range client.Friends </span><span class="cov8" title="1">{
+                        name := strings.Split(v, "-")
+                        if name[0] == receiver </span><span class="cov8" title="1">{
+                                roomName = name[1]
+                        }</span>
+                }
+                <span class="cov8" title="1">so.BroadcastTo(roomName, "get_new_message", message)</span>
+        }
+}
+
+// GetUserFriendsSocketController function that fetches the list of friends of the user.
+func GetUserFriendsSocketController(so socketio.Socket) SocketResponseFunc <span class="cov8" title="1">{
+        return func(n map[string]interface{}) </span><span class="cov8" title="1">{
+                convertedData, error := convertMapData(n)
+                if error != nil </span><span class="cov8" title="1">{
+                        so.Emit("error", error)
+                        return
+                }</span>
+
+                <span class="cov8" title="1">username := convertedData.Username
+                friends, err := GetFriendsController(username)
+                if chaterrors.CheckError(err) </span><span class="cov8" title="1">{
+                        error := chaterrors.NewError("Get Friends Error", err.Error())
+                        so.Emit("error", error)
+                        return
+                }</span>
+                <span class="cov8" title="1">fmt.Println("*** Retrieved friends of user [ " + username + " ] ***")
+                so.Emit("get_user_friends", friends)</span>
+        }
+}
+
+// ChangeStatusSocketController function that changes the status of the user.
+func ChangeStatusSocketController(so socketio.Socket) SocketResponseFunc <span class="cov8" title="1">{
+        return func(n map[string]interface{}) </span><span class="cov8" title="1">{
+                convertedData, error := convertMapData(n)
+                if error != nil </span><span class="cov8" title="1">{
+                        so.Emit("error", error)
+                        return
+                }</span>
+
+                <span class="cov8" title="1">username := convertedData.Username
+                status := convertedData.Status
+                _, err := ChangeClientStatusController(username, status)
+                chaterrors.CheckError(err)
+
+                client, err := GetClientController(username)
+                if chaterrors.CheckError(err) </span><span class="cov8" title="1">{
+                        error := chaterrors.NewError("Get Client Error", err.Error())
+                        so.Emit("error", error)
+                        return
+                }</span>
+
+                //Notify friends that we changed status
+                <span class="cov8" title="1">for _, v := range client.Friends </span><span class="cov8" title="1">{
+
+                        friendName := strings.Split(v, "-")
+
+                        session, err := GetUserSessionController(friendName[0])
+                        if chaterrors.CheckError(err) </span><span class="cov8" title="1">{
+                                error := chaterrors.NewError("Get User Session", err.Error())
+                                so.Emit("error", error)
+                                return
+                        }</span>
+
+                        <span class="cov8" title="1">if session.SocketID != "" </span><span class="cov8" title="1">{
+                                type UserInfo map[string]interface{}
+
+                                userInfo := UserInfo{"User": username, "Status": status}
+
+                                so.BroadcastTo("chat", "notify_status", userInfo)
+                        }</span>
+                }
+        }
+}
+
+// CloseUserSessionSocketController function that disconnects the user from the chat application.
+func CloseUserSessionSocketController(so socketio.Socket) SocketResponseFunc <span class="cov8" title="1">{
+        return func(n map[string]interface{}) </span><span class="cov8" title="1">{
+                fmt.Printf("\n   --&gt; DISCONNECTED %v &lt;--\n ", so.Id())
+                DisconnectUserSessionController(so.Id())
+        }</span>
+}
+
+/**
+Private Functions
+*/
+
+// convertMapData function that receives a map of strings and convert it
+// into a RequestSocketInformation object to be read by the socket.
+func convertMapData(n map[string]interface{}) (*RequestSocketInformation, *chaterrors.SocketError) <span class="cov8" title="1">{
+        data := new(RequestSocketInformation)
+
+        for k, v := range n </span><span class="cov8" title="1">{
+                switch k </span>{
+                case "username":<span class="cov8" title="1">
+                        if chaterrors.CheckIncorrectString(v) </span><span class="cov8" title="1">{
+                                error := chaterrors.NewError("Incorrect Name Format", "The username has an incorrect format.")
+                                return nil, &amp;error
+                        }</span>
+                        <span class="cov8" title="1">data.Username = v.(string)</span>
+                case "friendname":<span class="cov8" title="1">
+                        if chaterrors.CheckIncorrectString(v) </span><span class="cov8" title="1">{
+                                error := chaterrors.NewError("Incorrect Friendname Format", "The friendname has an incorrect format.")
+                                return nil, &amp;error
+                        }</span>
+                        <span class="cov8" title="1">data.FriendName = v.(string)</span>
+                case "text":<span class="cov8" title="1">
+                        if chaterrors.CheckIncorrectString(v) </span><span class="cov8" title="1">{
+                                error := chaterrors.NewError("Incorrect Text Format", "The text has an incorrect format.")
+                                return nil, &amp;error
+                        }</span>
+                        <span class="cov8" title="1">data.Text = v.(string)</span>
+                case "status":<span class="cov8" title="1">
+                        if chaterrors.CheckIncorrectString(v) </span><span class="cov8" title="1">{
+                                error := chaterrors.NewError("Incorrect Status Format", "The status has an incorrect format.")
+                                return nil, &amp;error
+                        }</span>
+                        <span class="cov8" title="1">data.Status = v.(string)</span>
+                default:<span class="cov8" title="1">
+                        if chaterrors.CheckIncorrectString(v) </span><span class="cov8" title="1">{
+                                error := chaterrors.NewError("Wrong Field Error", "This field is not valid.")
+                                return nil, &amp;error
+                        }</span>
+                }
+        }
+        <span class="cov8" title="1">return data, nil</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
