@@ -9,4 +9,5 @@
 - Vue.js
 - socket.io
 
-(API documentation currently not avaiable)
+#### API documentation
+- [here](./docs.md)
